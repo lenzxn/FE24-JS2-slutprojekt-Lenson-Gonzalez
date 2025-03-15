@@ -2,7 +2,7 @@
   "name": "fe24-js2-slutprojekt-lenson-gonzalez",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/app.js",
+  "main": "dist/index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "parcel src/index.html",
