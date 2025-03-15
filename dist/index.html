@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lensons Scrum Board</title>
+    <link rel="stylesheet" href="/index.2cdaf7bc.css">
+    <script src="/index.5670a418.js" defer=""></script>
+</head>
+
+<body>
+    <h1>Scrum Board</h1>
+    <section id="add-team-member">
+        <h2>Add Team Member</h2>
+        <input type="text" id="member-name" placeholder="Member Name" required="">
+        <div class="role-selection">
+            <label><input type="checkbox" class="role-checkbox" value="UX"> UX</label>
+            <label><input type="checkbox" class="role-checkbox" value="Frontend"> Frontend</label>
+            <label><input type="checkbox" class="role-checkbox" value="Backend"> Backend</label>
+        </div>
+        <button id="add-member-btn">Add Member</button>
+    </section>
+
+    <div id="success-popup" class="hidden">Member successfully added!</div>
+
+    <section id="task-form">
+        <h2>Add Task</h2>
+        <input type="text" id="task-title" placeholder="Task Title" required="">
+        <textarea id="task-desc" placeholder="Task Description"></textarea>
+        <select id="task-category">
+            <option value="UX">UX</option>
+            <option value="Frontend">Frontend</option>
+            <option value="Backend">Backend</option>
+        </select>
+        <button id="add-task-btn">Add Task</button>
+    </section>
+
+    <section id="task-filters">
+        <h2>Filter & Sort Tasks</h2>
+
+        <label for="filter-member">Filter by Member:</label>
+        <select id="filter-member">
+            <option value="">All Members</option>
+        </select>
+
+        <label for="filter-category">Filter by Category:</label>
+        <select id="filter-category">
+            <option value="">All Categories</option>
+            <option value="UX">UX</option>
+            <option value="Frontend">Frontend</option>
+            <option value="Backend">Backend</option>
+        </select>
+
+        <label for="sort-timestamp">Sort by Timestamp:</label>
+        <select id="sort-timestamp">
+            <option value="newest">Newest to Oldest</option>
+            <option value="oldest">Oldest to Newest</option>
+        </select>
+
+        <label for="sort-title">Sort by Title:</label>
+        <select id="sort-title">
+            <option value="az">A-Z</option>
+            <option value="za">Z-A</option>
+        </select>
+
+        <button id="apply-filters">Apply Filters</button>
+    </section>
+
+    <section id="scrum-board">
+        <div class="column" id="new-tasks">
+            <h2>New</h2>
+            <div class="task-list"></div>
+        </div>
+        <div class="column" id="in-progress-tasks">
+            <h2>In Progress</h2>
+            <div class="task-list"></div>
+        </div>
+        <div class="column" id="done-tasks">
+            <h2>Done</h2>
+            <div class="task-list"></div>
+        </div>
+    </section>
+</body>
+
+</html>
