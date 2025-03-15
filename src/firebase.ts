@@ -108,7 +108,7 @@ export const updateTaskStatus = async (
       }`
     );
   } catch (error) {
-    console.error("Error updating task:", error);
+    console.error("Error updating task", error);
   }
 };
 
@@ -121,7 +121,7 @@ export const addMember = async (member: Member) => {
     });
     console.log("Member added with ID:", docRef.id);
   } catch (error) {
-    console.error("Error adding member:", error);
+    console.error("error adding member:", error);
   }
 };
 
@@ -135,7 +135,7 @@ export const getMembers = async (): Promise<Member[]> => {
       return new Member(doc.id, data.name, data.roles || []);
     });
   } catch (error) {
-    console.error("Error fetching members:", error);
+    console.error("Error fetching members", error);
     return [];
   }
 };
