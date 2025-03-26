@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc, getDocs, getDoc, updateDoc, doc, deleteDoc, } from "firebase/firestore";
-import { Member } from "./models";
+import { Task, Member } from "./models";
 const firebaseConfig = {
     apiKey: "AIzaSyA08_ZHFhZz5lISI1hhykIF2I-C-u7ZkC4",
     authDomain: "scrum-board-lenzon.firebaseapp.com",
@@ -44,15 +44,10 @@ export const getTasks = async () => {
         const querySnapshot = await getDocs(assignmentsRef);
         return querySnapshot.docs.map((doc) => {
             const data = doc.data();
-            return {
-                id: doc.id,
-                title: data.title || "",
-                description: data.description || "",
-                category: data.category || "Frontend",
-                status: data.status || "new",
-                assigned: data.assigned || "",
-                timestamp: data.timestamp || Date.now(),
-            };
+            const assigned = data.assigned && typeof data.assigned === "object"
+                ? data.assigned
+                : null;
+            return new Task(doc.id, data.title || "", data.description || "", data.category || "Frontend", data.status || "new", assigned, data.timestamp || Date.now());
         });
     }
     catch (error) {
@@ -81,7 +76,7 @@ export const updateTaskStatus = async (taskId, newStatus, assignedMemberId) => {
             : ""}`);
     }
     catch (error) {
-        console.error("Error updating task:", error);
+        console.error("Error updating task", error);
     }
 };
 export const addMember = async (member) => {
@@ -94,7 +89,7 @@ export const addMember = async (member) => {
         console.log("Member added with ID:", docRef.id);
     }
     catch (error) {
-        console.error("Error adding member:", error);
+        console.error("error adding member:", error);
     }
 };
 export const getMembers = async () => {
@@ -107,7 +102,7 @@ export const getMembers = async () => {
         });
     }
     catch (error) {
-        console.error("Error fetching members:", error);
+        console.error("Error fetching members", error);
         return [];
     }
 };

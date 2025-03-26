@@ -58,15 +58,21 @@ export const getTasks = async (): Promise<Task[]> => {
 
     return querySnapshot.docs.map((doc) => {
       const data = doc.data() as DocumentData;
-      return {
-        id: doc.id,
-        title: data.title || "",
-        description: data.description || "",
-        category: data.category || "Frontend",
-        status: data.status || "new",
-        assigned: data.assigned || "",
-        timestamp: data.timestamp || Date.now(),
-      } as Task;
+
+      const assigned =
+        data.assigned && typeof data.assigned === "object"
+          ? data.assigned
+          : null;
+
+      return new Task(
+        doc.id,
+        data.title || "",
+        data.description || "",
+        data.category || "Frontend",
+        data.status || "new",
+        assigned,
+        data.timestamp || Date.now()
+      );
     });
   } catch (error) {
     console.error("❌ Error fetching tasks:", error);

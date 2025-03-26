@@ -143,9 +143,9 @@ const displayTasks = async () => {
             doneButton.classList.add("done-task-btn");
             doneButton.addEventListener("click", async () => {
                 try {
-                    await updateTaskStatus(task.id, "done"); // Move task to "Done"
+                    await updateTaskStatus(task.id, "done");
                     console.log(`task marked as 'Done'`);
-                    displayTasks(); // Refresh UI
+                    displayTasks();
                 }
                 catch (error) {
                     console.error("error marking task as done:", error);
@@ -159,9 +159,9 @@ const displayTasks = async () => {
             deleteButton.classList.add("delete-task-btn");
             deleteButton.addEventListener("click", async () => {
                 try {
-                    await deleteTask(task.id); // Call the delete function
+                    await deleteTask(task.id);
                     console.log(`task ${task.id} deleted successfully`);
-                    displayTasks(); // Refresh UI after deletion
+                    displayTasks();
                 }
                 catch (error) {
                     console.error("error deleting task:", error);
