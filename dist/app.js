@@ -41,6 +41,12 @@ const filterAndSortTasks = (tasks, members) => {
         else if (sortTitle === "za") {
             return b.title.localeCompare(a.title);
         }
+        console.log("🧪 Filtered Tasks:");
+        console.log(result.map((t) => ({
+            title: t.title,
+            assigned: t.assigned?.name || "None",
+            timestamp: t.timestamp,
+        })));
         return 0;
     });
     return result;
@@ -68,6 +74,13 @@ const displayTasks = async () => {
     const tasks = await getTasks();
     const members = await getMembers();
     await updateMemberFilterDropdown();
+    console.log("🔥 RAW TASK DATA:");
+    console.log(tasks.map((task) => ({
+        id: task.id,
+        title: task.title,
+        assigned: task.assigned,
+        timestamp: task.timestamp,
+    })));
     const filteredTasks = filterAndSortTasks(tasks, members);
     const newTasksList = document.querySelector("#new-tasks .task-list");
     const inProgressTasksList = document.querySelector("#in-progress-tasks .task-list");
