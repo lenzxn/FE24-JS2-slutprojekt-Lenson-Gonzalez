@@ -52,16 +52,16 @@ const filterAndSortTasks = (tasks, members) => {
     return result;
 };
 const updateMemberFilterDropdown = async () => {
-    const tasks = await getTasks();
     const members = await getMembers();
     const filterMemberDropdown = document.getElementById("filter-member");
     if (!filterMemberDropdown)
         return;
+    // Återställ dropdown
     filterMemberDropdown.innerHTML = "<option value=''>All Members</option>";
-    // Lägg till alla medlemmar (inte bara tilldelade)
+    // Lägg till alla medlemmar
     members.forEach((member) => {
         const option = document.createElement("option");
-        option.value = member.id;
+        option.value = member.id; // 🔑 Detta måste matcha task.assigned.id
         option.innerText = member.name;
         filterMemberDropdown.appendChild(option);
     });
