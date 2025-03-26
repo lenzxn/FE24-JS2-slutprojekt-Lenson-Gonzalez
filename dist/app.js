@@ -13,29 +13,35 @@ const memberName = document.getElementById("member-name");
 const memberRoles = document.querySelectorAll(".role-checkbox");
 const applyFiltersBtn = document.getElementById("apply-filters");
 const filterAndSortTasks = (tasks, members) => {
-    const filterCategory = document.getElementById("filter-category").value;
-    const filterMember = document.getElementById("filter-member").value;
-    const sortTimestamp = document.getElementById("sort-timestamp")?.value;
-    const sortTitle = document.getElementById("sort-title")
-        ?.value;
-    let filteredTasks = tasks.filter((task) => {
-        const categoryMatch = filterCategory
-            ? task.category === filterCategory
-            : true;
-        const memberMatch = filterMember
-            ? task.assigned && task.assigned.id === filterMember
-            : true;
-        return categoryMatch && memberMatch;
-    });
-    if (sortTimestamp) {
-        filteredTasks.sort((a, b) => sortTimestamp === "newest"
-            ? b.timestamp - a.timestamp
-            : a.timestamp - b.timestamp);
+    const filterCategory = document.getElementById("filter-category")?.value ??
+        "";
+    const filterMember = document.getElementById("filter-member")?.value ??
+        "";
+    const sortTimestamp = document.getElementById("sort-timestamp")?.value ??
+        "";
+    const sortTitle = document.getElementById("sort-title")?.value ?? "";
+    let filteredTasks = tasks;
+    // FILTER: Category
+    if (filterCategory !== "") {
+        filteredTasks = filteredTasks.filter((task) => task.category === filterCategory);
     }
-    if (sortTitle) {
-        filteredTasks.sort((a, b) => sortTitle === "az"
-            ? a.title.localeCompare(b.title)
-            : b.title.localeCompare(a.title));
+    // FILTER: Assigned Member
+    if (filterMember !== "") {
+        filteredTasks = filteredTasks.filter((task) => task.assigned && task.assigned.id === filterMember);
+    }
+    // SORT: Timestamp
+    if (sortTimestamp === "newest") {
+        filteredTasks = filteredTasks.sort((a, b) => b.timestamp - a.timestamp);
+    }
+    else if (sortTimestamp === "oldest") {
+        filteredTasks = filteredTasks.sort((a, b) => a.timestamp - b.timestamp);
+    }
+    // SORT: Title
+    if (sortTitle === "az") {
+        filteredTasks = filteredTasks.sort((a, b) => a.title.localeCompare(b.title));
+    }
+    else if (sortTitle === "za") {
+        filteredTasks = filteredTasks.sort((a, b) => b.title.localeCompare(a.title));
     }
     return filteredTasks;
 };
@@ -45,8 +51,7 @@ const updateMemberFilterDropdown = async () => {
     const filterMemberDropdown = document.getElementById("filter-member");
     if (!filterMemberDropdown)
         return;
-    filterMemberDropdown.innerHTML =
-        "<option value=''>Filter by Assigned Member</option>";
+    filterMemberDropdown.innerHTML = "<option value=''>All Members</option>";
     // get only members who have been assigned at least one task
     const assignedMemberIds = new Set(tasks
         .filter((task) => task.assigned !== null && typeof task.assigned === "object")
@@ -71,6 +76,16 @@ const displayTasks = async () => {
     doneTasksList.innerHTML = "";
     if (filteredTasks.length === 0)
         return;
+    console.log("Filtered tasks after filters applied:", filteredTasks);
+    console.log("Current filters =>", {
+        category: document.getElementById("filter-category")
+            .value,
+        member: document.getElementById("filter-member")
+            .value,
+        timestamp: document.getElementById("sort-timestamp")
+            .value,
+        title: document.getElementById("sort-title").value,
+    });
     filteredTasks.forEach((task) => {
         const taskElement = document.createElement("div");
         taskElement.classList.add("task");

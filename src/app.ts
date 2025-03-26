@@ -38,47 +38,51 @@ const applyFiltersBtn = document.getElementById(
   "apply-filters"
 ) as HTMLButtonElement;
 
-const filterAndSortTasks = (tasks: Task[], members: Member[]) => {
-  const filterCategory = (
-    document.getElementById("filter-category") as HTMLSelectElement
-  ).value;
-  const filterMember = (
-    document.getElementById("filter-member") as HTMLSelectElement
-  ).value;
-  const sortTimestamp = (
-    document.getElementById("sort-timestamp") as HTMLSelectElement
-  ).value;
-  const sortTitle = (document.getElementById("sort-title") as HTMLSelectElement)
-    .value;
+const filterAndSortTasks = (tasks: Task[], members: Member[]): Task[] => {
+  const filterCategory =
+    (document.getElementById("filter-category") as HTMLSelectElement)?.value ??
+    "";
+  const filterMember =
+    (document.getElementById("filter-member") as HTMLSelectElement)?.value ??
+    "";
+  const sortTimestamp =
+    (document.getElementById("sort-timestamp") as HTMLSelectElement)?.value ??
+    "";
+  const sortTitle =
+    (document.getElementById("sort-title") as HTMLSelectElement)?.value ?? "";
 
   let filteredTasks = tasks;
 
-  // Filter by category
-  if (filterCategory) {
+  // FILTER: Category
+  if (filterCategory !== "") {
     filteredTasks = filteredTasks.filter(
       (task) => task.category === filterCategory
     );
   }
 
-  // Filter by assigned member
-  if (filterMember) {
+  // FILTER: Assigned Member
+  if (filterMember !== "") {
     filteredTasks = filteredTasks.filter(
       (task) => task.assigned && task.assigned.id === filterMember
     );
   }
 
-  // Sort by timestamp
+  // SORT: Timestamp
   if (sortTimestamp === "newest") {
-    filteredTasks.sort((a, b) => b.timestamp - a.timestamp);
+    filteredTasks = filteredTasks.sort((a, b) => b.timestamp - a.timestamp);
   } else if (sortTimestamp === "oldest") {
-    filteredTasks.sort((a, b) => a.timestamp - b.timestamp);
+    filteredTasks = filteredTasks.sort((a, b) => a.timestamp - b.timestamp);
   }
 
-  // Sort by title
+  // SORT: Title
   if (sortTitle === "az") {
-    filteredTasks.sort((a, b) => a.title.localeCompare(b.title));
+    filteredTasks = filteredTasks.sort((a, b) =>
+      a.title.localeCompare(b.title)
+    );
   } else if (sortTitle === "za") {
-    filteredTasks.sort((a, b) => b.title.localeCompare(a.title));
+    filteredTasks = filteredTasks.sort((a, b) =>
+      b.title.localeCompare(a.title)
+    );
   }
 
   return filteredTasks;
@@ -93,8 +97,7 @@ const updateMemberFilterDropdown = async () => {
 
   if (!filterMemberDropdown) return;
 
-  filterMemberDropdown.innerHTML =
-    "<option value=''>Filter by Assigned Member</option>";
+  filterMemberDropdown.innerHTML = "<option value=''>All Members</option>";
 
   // get only members who have been assigned at least one task
   const assignedMemberIds = new Set(
@@ -128,6 +131,17 @@ const displayTasks = async () => {
   doneTasksList.innerHTML = "";
 
   if (filteredTasks.length === 0) return;
+
+  console.log("Filtered tasks after filters applied:", filteredTasks);
+  console.log("Current filters =>", {
+    category: (document.getElementById("filter-category") as HTMLSelectElement)
+      .value,
+    member: (document.getElementById("filter-member") as HTMLSelectElement)
+      .value,
+    timestamp: (document.getElementById("sort-timestamp") as HTMLSelectElement)
+      .value,
+    title: (document.getElementById("sort-title") as HTMLSelectElement).value,
+  });
 
   filteredTasks.forEach((task) => {
     const taskElement = document.createElement("div");
