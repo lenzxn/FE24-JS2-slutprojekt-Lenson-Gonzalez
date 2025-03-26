@@ -58,9 +58,10 @@ const filterAndSortTasks = (tasks: Task[], members: Member[]): Task[] => {
   }
 
   if (filterMember) {
-    result = result.filter(
-      (task) => task.assigned && task.assigned.id === filterMember
-    );
+    result = result.filter((task) => {
+      if (!task.assigned) return false;
+      return String(task.assigned.id).trim() === String(filterMember).trim();
+    });
   }
 
   // Combined sorting
