@@ -51,41 +51,35 @@ const filterAndSortTasks = (tasks: Task[], members: Member[]): Task[] => {
   const sortTitle =
     (document.getElementById("sort-title") as HTMLSelectElement)?.value ?? "";
 
-  let filteredTasks = tasks;
+  let result = [...tasks]; // clone the array
 
-  // FILTER: Category
-  if (filterCategory !== "") {
-    filteredTasks = filteredTasks.filter(
-      (task) => task.category === filterCategory
-    );
+  // ✅ Filter by category
+  if (filterCategory) {
+    result = result.filter((task) => task.category === filterCategory);
   }
 
-  // FILTER: Assigned Member
-  if (filterMember !== "") {
-    filteredTasks = filteredTasks.filter(
+  // ✅ Filter by assigned member
+  if (filterMember) {
+    result = result.filter(
       (task) => task.assigned && task.assigned.id === filterMember
     );
   }
 
-  // SORT: Timestamp
-  if (sortTimestamp === "newest") {
-    filteredTasks = filteredTasks.sort((a, b) => b.timestamp - a.timestamp);
-  } else if (sortTimestamp === "oldest") {
-    filteredTasks = filteredTasks.sort((a, b) => a.timestamp - b.timestamp);
-  }
-
-  // SORT: Title
+  // ✅ Sort by title
   if (sortTitle === "az") {
-    filteredTasks = filteredTasks.sort((a, b) =>
-      a.title.localeCompare(b.title)
-    );
+    result.sort((a, b) => a.title.localeCompare(b.title));
   } else if (sortTitle === "za") {
-    filteredTasks = filteredTasks.sort((a, b) =>
-      b.title.localeCompare(a.title)
-    );
+    result.sort((a, b) => b.title.localeCompare(a.title));
   }
 
-  return filteredTasks;
+  // ✅ Sort by timestamp
+  if (sortTimestamp === "newest") {
+    result.sort((a, b) => b.timestamp - a.timestamp);
+  } else if (sortTimestamp === "oldest") {
+    result.sort((a, b) => a.timestamp - b.timestamp);
+  }
+
+  return result;
 };
 
 const updateMemberFilterDropdown = async () => {
@@ -124,24 +118,46 @@ const displayTasks = async () => {
   const members = await getMembers();
   await updateMemberFilterDropdown();
 
+  const filterCategory = (
+    document.getElementById("filter-category") as HTMLSelectElement
+  )?.value;
+  const filterMember = (
+    document.getElementById("filter-member") as HTMLSelectElement
+  )?.value;
+  const sortTimestamp = (
+    document.getElementById("sort-timestamp") as HTMLSelectElement
+  )?.value;
+  const sortTitle = (document.getElementById("sort-title") as HTMLSelectElement)
+    ?.value;
+
+  console.clear();
+  console.log("Filters applied:", {
+    category: filterCategory,
+    member: filterMember,
+    sortTimestamp,
+    sortTitle,
+  });
+
   const filteredTasks = filterAndSortTasks(tasks, members);
+
+  const newTasksList = document.querySelector(
+    "#new-tasks .task-list"
+  ) as HTMLElement;
+  const inProgressTasksList = document.querySelector(
+    "#in-progress-tasks .task-list"
+  ) as HTMLElement;
+  const doneTasksList = document.querySelector(
+    "#done-tasks .task-list"
+  ) as HTMLElement;
 
   newTasksList.innerHTML = "";
   inProgressTasksList.innerHTML = "";
   doneTasksList.innerHTML = "";
 
-  if (filteredTasks.length === 0) return;
-
-  console.log("Filtered tasks after filters applied:", filteredTasks);
-  console.log("Current filters =>", {
-    category: (document.getElementById("filter-category") as HTMLSelectElement)
-      .value,
-    member: (document.getElementById("filter-member") as HTMLSelectElement)
-      .value,
-    timestamp: (document.getElementById("sort-timestamp") as HTMLSelectElement)
-      .value,
-    title: (document.getElementById("sort-title") as HTMLSelectElement).value,
-  });
+  if (filteredTasks.length === 0) {
+    newTasksList.innerHTML = "<p>No matching tasks found.</p>";
+    return;
+  }
 
   filteredTasks.forEach((task) => {
     const taskElement = document.createElement("div");
@@ -154,26 +170,25 @@ const displayTasks = async () => {
     }
 
     taskElement.innerHTML = `
-  <h3>${task.title}</h3>
-  <p>${task.description}</p>
-  <small>Category: ${task.category}</small><br>
-  <small>Created: ${new Date(task.timestamp).toLocaleString()}</small>
-  <p class="assigned-info">Assigned to: ${assignedText}</p>
-`;
+      <h3>${task.title}</h3>
+      <p>${task.description}</p>
+      <small>Category: ${task.category}</small><br>
+      <small>Created: ${task.getFormattedDate()}</small>
+      <p class="assigned-info">Assigned to: ${assignedText}</p>
+    `;
 
-    // Create "Assign Task" button (only if the task is in "New")
+    // Assign task button
     if (task.status === "new") {
       const assignButton = document.createElement("button");
       assignButton.textContent = "Assign Task";
       assignButton.classList.add("assign-task-btn");
 
-      // show the dropdown (hidden by default)
       const memberSelect = document.createElement("select");
       memberSelect.classList.add("assign-dropdown");
       memberSelect.style.display = "none";
-
       memberSelect.innerHTML = "<option value=''>Select Member</option>";
-      members // Only show matching roles
+
+      members
         .filter((member) => member.roles.includes(task.category))
         .forEach((member) => {
           const option = document.createElement("option");
@@ -185,7 +200,7 @@ const displayTasks = async () => {
       const confirmAssignButton = document.createElement("button");
       confirmAssignButton.textContent = "Confirm";
       confirmAssignButton.classList.add("confirm-assign-btn");
-      confirmAssignButton.style.display = "none"; // Hidden initially
+      confirmAssignButton.style.display = "none";
 
       assignButton.addEventListener("click", () => {
         memberSelect.style.display = "block";
@@ -197,36 +212,22 @@ const displayTasks = async () => {
 
         if (selectedMemberId) {
           try {
-            assignedText = `${selectedMemberId}`;
-            taskElement.querySelector(
-              ".assigned-info"
-            )!.innerHTML = `Assigned to: ${assignedText}`;
-
-            // Updatera Firebase and move to "in progress"
             await updateTaskStatus(task.id, "in progress", selectedMemberId);
-
-            console.log(
-              `✅ Task assigned to: ${selectedMemberId} and moved to 'In Progress'`
-            );
-
             displayTasks();
           } catch (error) {
             console.error("Error assigning task:", error);
           }
-        } else {
         }
 
         memberSelect.style.display = "none";
         confirmAssignButton.style.display = "none";
       });
 
-      // Append elements to task element
       taskElement.appendChild(assignButton);
       taskElement.appendChild(memberSelect);
       taskElement.appendChild(confirmAssignButton);
     }
 
-    // "DONE" button if task is in progress
     if (task.status === "in progress") {
       const doneButton = document.createElement("button");
       doneButton.textContent = "DONE";
@@ -235,7 +236,6 @@ const displayTasks = async () => {
       doneButton.addEventListener("click", async () => {
         try {
           await updateTaskStatus(task.id, "done");
-          console.log(`task marked as 'Done'`);
           displayTasks();
         } catch (error) {
           console.error("error marking task as done:", error);
@@ -253,7 +253,6 @@ const displayTasks = async () => {
       deleteButton.addEventListener("click", async () => {
         try {
           await deleteTask(task.id);
-          console.log(`task ${task.id} deleted successfully`);
           displayTasks();
         } catch (error) {
           console.error("error deleting task:", error);
@@ -263,7 +262,7 @@ const displayTasks = async () => {
       taskElement.appendChild(deleteButton);
     }
 
-    // Append task to the correct column based on status
+    // Add task to correct column
     if (task.status === "new") {
       newTasksList.appendChild(taskElement);
     } else if (task.status === "in progress") {
