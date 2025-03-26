@@ -47,35 +47,38 @@ const filterAndSortTasks = (tasks: Task[], members: Member[]) => {
   ).value;
   const sortTimestamp = (
     document.getElementById("sort-timestamp") as HTMLSelectElement
-  )?.value;
+  ).value;
   const sortTitle = (document.getElementById("sort-title") as HTMLSelectElement)
-    ?.value;
+    .value;
 
-  let filteredTasks = tasks.filter((task) => {
-    const categoryMatch = filterCategory
-      ? task.category === filterCategory
-      : true;
+  let filteredTasks = tasks;
 
-    const memberMatch = filterMember
-      ? task.assigned && task.assigned.id === filterMember
-      : true;
-
-    return categoryMatch && memberMatch;
-  });
-
-  if (sortTimestamp) {
-    filteredTasks.sort((a, b) =>
-      sortTimestamp === "newest"
-        ? b.timestamp - a.timestamp
-        : a.timestamp - b.timestamp
+  // Filter by category
+  if (filterCategory) {
+    filteredTasks = filteredTasks.filter(
+      (task) => task.category === filterCategory
     );
   }
-  if (sortTitle) {
-    filteredTasks.sort((a, b) =>
-      sortTitle === "az"
-        ? a.title.localeCompare(b.title)
-        : b.title.localeCompare(a.title)
+
+  // Filter by assigned member
+  if (filterMember) {
+    filteredTasks = filteredTasks.filter(
+      (task) => task.assigned && task.assigned.id === filterMember
     );
+  }
+
+  // Sort by timestamp
+  if (sortTimestamp === "newest") {
+    filteredTasks.sort((a, b) => b.timestamp - a.timestamp);
+  } else if (sortTimestamp === "oldest") {
+    filteredTasks.sort((a, b) => a.timestamp - b.timestamp);
+  }
+
+  // Sort by title
+  if (sortTitle === "az") {
+    filteredTasks.sort((a, b) => a.title.localeCompare(b.title));
+  } else if (sortTitle === "za") {
+    filteredTasks.sort((a, b) => b.title.localeCompare(a.title));
   }
 
   return filteredTasks;
