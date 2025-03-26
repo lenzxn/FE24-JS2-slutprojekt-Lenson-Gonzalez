@@ -51,33 +51,34 @@ const filterAndSortTasks = (tasks: Task[], members: Member[]): Task[] => {
   const sortTitle =
     (document.getElementById("sort-title") as HTMLSelectElement)?.value ?? "";
 
-  let result = [...tasks]; // clone the array
+  let result = [...tasks];
 
-  // ✅ Filter by category
   if (filterCategory) {
     result = result.filter((task) => task.category === filterCategory);
   }
 
-  // ✅ Filter by assigned member
   if (filterMember) {
     result = result.filter(
       (task) => task.assigned && task.assigned.id === filterMember
     );
   }
 
-  // ✅ Sort by title
-  if (sortTitle === "az") {
-    result.sort((a, b) => a.title.localeCompare(b.title));
-  } else if (sortTitle === "za") {
-    result.sort((a, b) => b.title.localeCompare(a.title));
-  }
+  // Combined sorting
+  result.sort((a, b) => {
+    if (sortTimestamp === "newest" && b.timestamp !== a.timestamp) {
+      return b.timestamp - a.timestamp;
+    } else if (sortTimestamp === "oldest" && a.timestamp !== b.timestamp) {
+      return a.timestamp - b.timestamp;
+    }
 
-  // ✅ Sort by timestamp
-  if (sortTimestamp === "newest") {
-    result.sort((a, b) => b.timestamp - a.timestamp);
-  } else if (sortTimestamp === "oldest") {
-    result.sort((a, b) => a.timestamp - b.timestamp);
-  }
+    if (sortTitle === "az") {
+      return a.title.localeCompare(b.title);
+    } else if (sortTitle === "za") {
+      return b.title.localeCompare(a.title);
+    }
+
+    return 0;
+  });
 
   return result;
 };
