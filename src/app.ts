@@ -137,11 +137,12 @@ const displayTasks = async () => {
     }
 
     taskElement.innerHTML = `
-        <h3>${task.title}</h3>
-        <p>${task.description}</p>
-        <small>Category: ${task.category}</small>
-        <p class="assigned-info">Assigned to: ${assignedText}</p>
-      `;
+  <h3>${task.title}</h3>
+  <p>${task.description}</p>
+  <small>Category: ${task.category}</small><br>
+  <small>Created: ${new Date(task.timestamp).toLocaleString()}</small>
+  <p class="assigned-info">Assigned to: ${assignedText}</p>
+`;
 
     // Create "Assign Task" button (only if the task is in "New")
     if (task.status === "new") {

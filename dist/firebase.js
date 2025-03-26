@@ -44,10 +44,17 @@ export const getTasks = async () => {
         const querySnapshot = await getDocs(assignmentsRef);
         return querySnapshot.docs.map((doc) => {
             const data = doc.data();
+            // Se till att assigned är ett objekt eller null
             const assigned = data.assigned && typeof data.assigned === "object"
-                ? data.assigned
+                ? {
+                    id: data.assigned.id || "",
+                    name: data.assigned.name || "",
+                }
                 : null;
-            return new Task(doc.id, data.title || "", data.description || "", data.category || "Frontend", data.status || "new", assigned, data.timestamp || Date.now());
+            // Se till att timestamp är ett nummer
+            const timestamp = typeof data.timestamp === "number" ? data.timestamp : Date.now();
+            // Returnera en instans av Task-klassen
+            return new Task(doc.id, data.title || "", data.description || "", data.category || "Frontend", data.status || "new", assigned, timestamp);
         });
     }
     catch (error) {
