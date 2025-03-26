@@ -52,16 +52,14 @@ const updateMemberFilterDropdown = async () => {
     if (!filterMemberDropdown)
         return;
     filterMemberDropdown.innerHTML = "<option value=''>All Members</option>";
-    // get only members who have been assigned at least one task
     const assignedMemberIds = new Set(tasks
-        .filter((task) => task.assigned !== null && typeof task.assigned === "object")
+        .filter((task) => task.assigned && typeof task.assigned === "object")
         .map((task) => task.assigned.id));
     members.forEach((member) => {
         if (assignedMemberIds.has(member.id)) {
-            // Only add members who are assigned tasks
             const option = document.createElement("option");
             option.value = member.id;
-            option.innerText = `${member.name}`;
+            option.innerText = member.name;
             filterMemberDropdown.appendChild(option);
         }
     });
@@ -70,18 +68,6 @@ const displayTasks = async () => {
     const tasks = await getTasks();
     const members = await getMembers();
     await updateMemberFilterDropdown();
-    const filterCategory = document.getElementById("filter-category")?.value;
-    const filterMember = document.getElementById("filter-member")?.value;
-    const sortTimestamp = document.getElementById("sort-timestamp")?.value;
-    const sortTitle = document.getElementById("sort-title")
-        ?.value;
-    console.clear();
-    console.log("Filters applied:", {
-        category: filterCategory,
-        member: filterMember,
-        sortTimestamp,
-        sortTitle,
-    });
     const filteredTasks = filterAndSortTasks(tasks, members);
     const newTasksList = document.querySelector("#new-tasks .task-list");
     const inProgressTasksList = document.querySelector("#in-progress-tasks .task-list");
@@ -108,7 +94,6 @@ const displayTasks = async () => {
       <small>Created: ${task.getFormattedDate()}</small>
       <p class="assigned-info">Assigned to: ${assignedText}</p>
     `;
-        // Assign task button
         if (task.status === "new") {
             const assignButton = document.createElement("button");
             assignButton.textContent = "Assign Task";
@@ -181,7 +166,6 @@ const displayTasks = async () => {
             });
             taskElement.appendChild(deleteButton);
         }
-        // Add task to correct column
         if (task.status === "new") {
             newTasksList.appendChild(taskElement);
         }
