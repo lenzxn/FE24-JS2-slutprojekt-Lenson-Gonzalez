@@ -1,11 +1,11 @@
 export class Task {
-  id: string;
+  readonly id: string;
   title: string;
   description: string;
   category: "UX" | "Frontend" | "Backend";
   status: "new" | "in progress" | "done";
   assigned: { id: string; name: string } | null;
-  timestamp: number;
+  readonly timestamp: number;
 
   constructor(
     id: string,
@@ -23,6 +23,10 @@ export class Task {
     this.status = status;
     this.assigned = assigned;
     this.timestamp = timestamp;
+  }
+
+  getFormattedDate(): string {
+    return new Date(this.timestamp).toLocaleString();
   }
 }
 

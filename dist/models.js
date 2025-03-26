@@ -15,6 +15,9 @@ export class Task {
         this.assigned = assigned;
         this.timestamp = timestamp;
     }
+    getFormattedDate() {
+        return new Date(this.timestamp).toLocaleString();
+    }
 }
 export class Member {
     id;
