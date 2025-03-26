@@ -103,19 +103,12 @@ const updateMemberFilterDropdown = async () => {
 
   filterMemberDropdown.innerHTML = "<option value=''>All Members</option>";
 
-  const assignedMemberIds = new Set(
-    tasks
-      .filter((task) => task.assigned && typeof task.assigned === "object")
-      .map((task) => task.assigned!.id)
-  );
-
+  // Lägg till alla medlemmar (inte bara tilldelade)
   members.forEach((member) => {
-    if (assignedMemberIds.has(member.id)) {
-      const option = document.createElement("option");
-      option.value = member.id;
-      option.innerText = member.name;
-      filterMemberDropdown.appendChild(option);
-    }
+    const option = document.createElement("option");
+    option.value = member.id;
+    option.innerText = member.name;
+    filterMemberDropdown.appendChild(option);
   });
 };
 
@@ -125,14 +118,14 @@ const displayTasks = async () => {
   await updateMemberFilterDropdown();
 
   console.log("🔥 RAW TASK DATA:");
-  console.log(
-    tasks.map((task) => ({
-      id: task.id,
+  tasks.forEach((task) => {
+    console.log({
       title: task.title,
       assigned: task.assigned,
+      assignedId: task.assigned?.id,
       timestamp: task.timestamp,
-    }))
-  );
+    });
+  });
 
   const filteredTasks = filterAndSortTasks(tasks, members);
 

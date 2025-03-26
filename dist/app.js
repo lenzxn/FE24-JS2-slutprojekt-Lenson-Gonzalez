@@ -58,16 +58,12 @@ const updateMemberFilterDropdown = async () => {
     if (!filterMemberDropdown)
         return;
     filterMemberDropdown.innerHTML = "<option value=''>All Members</option>";
-    const assignedMemberIds = new Set(tasks
-        .filter((task) => task.assigned && typeof task.assigned === "object")
-        .map((task) => task.assigned.id));
+    // Lägg till alla medlemmar (inte bara tilldelade)
     members.forEach((member) => {
-        if (assignedMemberIds.has(member.id)) {
-            const option = document.createElement("option");
-            option.value = member.id;
-            option.innerText = member.name;
-            filterMemberDropdown.appendChild(option);
-        }
+        const option = document.createElement("option");
+        option.value = member.id;
+        option.innerText = member.name;
+        filterMemberDropdown.appendChild(option);
     });
 };
 const displayTasks = async () => {
@@ -75,12 +71,14 @@ const displayTasks = async () => {
     const members = await getMembers();
     await updateMemberFilterDropdown();
     console.log("🔥 RAW TASK DATA:");
-    console.log(tasks.map((task) => ({
-        id: task.id,
-        title: task.title,
-        assigned: task.assigned,
-        timestamp: task.timestamp,
-    })));
+    tasks.forEach((task) => {
+        console.log({
+            title: task.title,
+            assigned: task.assigned,
+            assignedId: task.assigned?.id,
+            timestamp: task.timestamp,
+        });
+    });
     const filteredTasks = filterAndSortTasks(tasks, members);
     const newTasksList = document.querySelector("#new-tasks .task-list");
     const inProgressTasksList = document.querySelector("#in-progress-tasks .task-list");
