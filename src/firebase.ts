@@ -59,20 +59,14 @@ export const getTasks = async (): Promise<Task[]> => {
     return querySnapshot.docs.map((doc) => {
       const data = doc.data() as DocumentData;
 
-      // Se till att assigned är ett objekt eller null
       const assigned =
         data.assigned && typeof data.assigned === "object"
-          ? {
-              id: data.assigned.id || "",
-              name: data.assigned.name || "",
-            }
+          ? { id: data.assigned.id || "", name: data.assigned.name || "" }
           : null;
 
-      // Se till att timestamp är ett nummer
       const timestamp =
         typeof data.timestamp === "number" ? data.timestamp : Date.now();
 
-      // Returnera en instans av Task-klassen
       return new Task(
         doc.id,
         data.title || "",
