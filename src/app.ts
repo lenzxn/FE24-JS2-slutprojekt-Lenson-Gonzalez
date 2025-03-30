@@ -336,4 +336,76 @@ if (resetBtn) {
   });
 }
 
+const assignedMemberDropdown = document.getElementById(
+  "assigned-member-dropdown"
+) as HTMLSelectElement;
+const assignedMemberSearchBtn = document.getElementById(
+  "assigned-member-search-btn"
+) as HTMLButtonElement;
+const assignedMemberResetBtn = document.getElementById(
+  "assigned-member-reset-btn"
+) as HTMLButtonElement;
+
+const populateAssignedMembersDropdown = async () => {
+  const tasks = await getTasks();
+  const assignedMemberIds = new Set(
+    tasks.filter((t) => t.assigned).map((t) => t.assigned!.id)
+  );
+  const members = await getMembers();
+
+  assignedMemberDropdown.innerHTML = "<option value=''>Select Member</option>";
+  members.forEach((member) => {
+    if (assignedMemberIds.has(member.id)) {
+      const option = document.createElement("option");
+      option.value = member.id;
+      option.innerText = member.name;
+      assignedMemberDropdown.appendChild(option);
+    }
+  });
+};
+
+assignedMemberSearchBtn.addEventListener("click", async () => {
+  const selectedId = assignedMemberDropdown.value;
+  const tasks = await getTasks();
+
+  const filtered = tasks.filter((t) => t.assigned?.id === selectedId);
+
+  newTasksList.innerHTML = "";
+  inProgressTasksList.innerHTML = "";
+  doneTasksList.innerHTML = "";
+
+  if (filtered.length === 0) {
+    newTasksList.innerHTML = "<p>No tasks found for this member.</p>";
+    return;
+  }
+
+  filtered.forEach((task) => {
+    const taskElement = document.createElement("div");
+    taskElement.classList.add("task");
+
+    const assignedText = task.assigned
+      ? `${task.assigned.name} (${task.assigned.id})`
+      : "Not assigned";
+
+    taskElement.innerHTML = `
+      <h3>${task.title}</h3>
+      <p>${task.description}</p>
+      <small>Category: ${task.category}</small><br>
+      <small>Created: ${task.getFormattedDate()}</small>
+      <p class="assigned-info">Assigned to: ${assignedText}</p>
+    `;
+
+    if (task.status === "new") newTasksList.appendChild(taskElement);
+    else if (task.status === "in progress")
+      inProgressTasksList.appendChild(taskElement);
+    else if (task.status === "done") doneTasksList.appendChild(taskElement);
+  });
+});
+
+assignedMemberResetBtn.addEventListener("click", () => {
+  assignedMemberDropdown.value = "";
+  displayTasks();
+});
+
 displayTasks();
+await populateAssignedMembersDropdown();
