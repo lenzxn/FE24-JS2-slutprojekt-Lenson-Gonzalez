@@ -12,6 +12,7 @@
 <body>
     <h1>Scrum Board</h1>
 
+    <!-- Add Team Member -->
     <section id="add-team-member">
         <h2>Add Team Member</h2>
         <input type="text" id="member-name" placeholder="Member Name" required />
@@ -25,6 +26,7 @@
 
     <div id="success-popup" class="hidden">Member successfully added!</div>
 
+    <!-- Add Task -->
     <section id="task-form">
         <h2>Add Task</h2>
         <input type="text" id="task-title" placeholder="Task Title" required />
@@ -37,8 +39,9 @@
         <button id="add-task-btn">Add Task</button>
     </section>
 
+    <!-- ✅ New Combined Filtering UI -->
     <section id="assigned-member-filter-ui">
-        <h2>Search Tasks</h2>
+        <h2>Filter & Sort Tasks</h2>
 
         <label for="assigned-member-search">Assigned Member:</label>
         <select id="assigned-member-search">
@@ -71,6 +74,7 @@
         <button id="assigned-member-reset-btn">Reset</button>
     </section>
 
+    <!-- Scrum Board -->
     <section id="scrum-board">
         <div class="column" id="new-tasks">
             <h2>New</h2>

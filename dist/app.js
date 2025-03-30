@@ -1,39 +1,69 @@
-import { addTask, getTasks, addMember, getMembers, } from "./firebase";
+import { addTask, getTasks, updateTaskStatus, addMember, getMembers, deleteTask, } from "./firebase";
 import { Task, Member } from "./models";
+// Form elements
 const addTaskBtn = document.getElementById("add-task-btn");
 const taskTitle = document.getElementById("task-title");
 const taskDesc = document.getElementById("task-desc");
 const taskCategory = document.getElementById("task-category");
-const newTasksList = document.querySelector("#new-tasks .task-list");
-const inProgressTasksList = document.querySelector("#in-progress-tasks .task-list");
-const doneTasksList = document.querySelector("#done-tasks .task-list");
 const addMemberBtn = document.getElementById("add-member-btn");
 const memberName = document.getElementById("member-name");
 const memberRoles = document.querySelectorAll(".role-checkbox");
+// Filter elements
+const filterCategory = document.getElementById("filter-category");
+const filterMember = document.getElementById("filter-member");
+const sortTimestamp = document.getElementById("sort-timestamp");
+const sortTitle = document.getElementById("sort-title");
+const applyFiltersBtn = document.getElementById("apply-filters");
+const resetFiltersBtn = document.getElementById("reset-filters");
+// Custom search UI
 const assignedMemberDropdown = document.getElementById("assigned-member-search");
-const categoryDropdown = document.getElementById("assigned-filter-category");
-const timestampDropdown = document.getElementById("assigned-sort-timestamp");
-const titleDropdown = document.getElementById("assigned-sort-title");
-const searchBtn = document.getElementById("assigned-member-search-btn");
-const resetBtn = document.getElementById("assigned-member-reset-btn");
-// ✅ Populate dropdown with assigned members only
-const populateAssignedMembersDropdown = async () => {
+const assignedMemberSearchBtn = document.getElementById("assigned-member-search-btn");
+const assignedMemberResetBtn = document.getElementById("assigned-member-reset-btn");
+const assignedFilterCategory = document.getElementById("assigned-filter-category");
+const assignedSortTimestamp = document.getElementById("assigned-sort-timestamp");
+const assignedSortTitle = document.getElementById("assigned-sort-title");
+// Columns
+const newTasksList = document.querySelector("#new-tasks .task-list");
+const inProgressTasksList = document.querySelector("#in-progress-tasks .task-list");
+const doneTasksList = document.querySelector("#done-tasks .task-list");
+const filterAndSortTasks = (tasks, members) => {
+    let result = [...tasks];
+    const categoryValue = filterCategory.value;
+    const memberValue = filterMember.value;
+    const timestampSort = sortTimestamp.value;
+    const titleSort = sortTitle.value;
+    if (categoryValue)
+        result = result.filter((t) => t.category === categoryValue);
+    if (memberValue)
+        result = result.filter((t) => t.assigned?.id === memberValue);
+    if (timestampSort === "newest")
+        result.sort((a, b) => b.timestamp - a.timestamp);
+    else if (timestampSort === "oldest")
+        result.sort((a, b) => a.timestamp - b.timestamp);
+    if (titleSort === "az")
+        result.sort((a, b) => a.title.localeCompare(b.title));
+    else if (titleSort === "za")
+        result.sort((a, b) => b.title.localeCompare(a.title));
+    return result;
+};
+const populateMemberDropdown = async () => {
     const tasks = await getTasks();
     const members = await getMembers();
-    const assignedIds = new Set(tasks.filter((task) => task.assigned).map((task) => task.assigned.id));
-    assignedMemberDropdown.innerHTML =
-        "<option value=''>-- Select Member --</option>";
+    const assignedIds = new Set(tasks.filter((t) => t.assigned).map((t) => t.assigned.id));
+    filterMember.innerHTML = "<option value=''>All Members</option>";
+    assignedMemberDropdown.innerHTML = "<option value=''>Select Member</option>";
     members.forEach((member) => {
         if (assignedIds.has(member.id)) {
-            const option = document.createElement("option");
-            option.value = member.id;
-            option.textContent = member.name;
-            assignedMemberDropdown.appendChild(option);
+            const option1 = document.createElement("option");
+            option1.value = member.id;
+            option1.text = member.name;
+            filterMember.appendChild(option1);
+            const option2 = option1.cloneNode(true);
+            assignedMemberDropdown.appendChild(option2);
         }
     });
 };
-// ✅ Display tasks (general & reusable)
-const displayFilteredTasks = (tasks) => {
+const renderTasks = (tasks, members) => {
     newTasksList.innerHTML = "";
     inProgressTasksList.innerHTML = "";
     doneTasksList.innerHTML = "";
@@ -42,97 +72,144 @@ const displayFilteredTasks = (tasks) => {
         return;
     }
     tasks.forEach((task) => {
-        const taskEl = document.createElement("div");
-        taskEl.classList.add("task");
+        const el = document.createElement("div");
+        el.classList.add("task");
+        el.setAttribute("data-id", task.id);
         const assignedText = task.assigned
             ? `${task.assigned.name} (${task.assigned.id})`
             : "Not assigned";
-        taskEl.innerHTML = `
+        el.innerHTML = `
       <h3>${task.title}</h3>
       <p>${task.description}</p>
       <small>Category: ${task.category}</small><br>
       <small>Created: ${task.getFormattedDate()}</small>
       <p class="assigned-info">Assigned to: ${assignedText}</p>
     `;
+        if (task.status === "new") {
+            const assignBtn = document.createElement("button");
+            assignBtn.textContent = "Assign Task";
+            const select = document.createElement("select");
+            select.style.display = "none";
+            select.innerHTML = "<option value=''>Select Member</option>";
+            members
+                .filter((m) => m.roles.includes(task.category))
+                .forEach((m) => {
+                const opt = document.createElement("option");
+                opt.value = m.id;
+                opt.textContent = `${m.name} (${m.roles.join(", ")})`;
+                select.appendChild(opt);
+            });
+            const confirmBtn = document.createElement("button");
+            confirmBtn.textContent = "Confirm";
+            confirmBtn.style.display = "none";
+            assignBtn.addEventListener("click", () => {
+                select.style.display = "block";
+                confirmBtn.style.display = "block";
+            });
+            confirmBtn.addEventListener("click", async () => {
+                const selected = select.value;
+                if (selected) {
+                    await updateTaskStatus(task.id, "in progress", selected);
+                    await displayTasks();
+                }
+            });
+            el.appendChild(assignBtn);
+            el.appendChild(select);
+            el.appendChild(confirmBtn);
+        }
+        if (task.status === "in progress") {
+            const doneBtn = document.createElement("button");
+            doneBtn.textContent = "DONE";
+            doneBtn.addEventListener("click", async () => {
+                await updateTaskStatus(task.id, "done");
+                await displayTasks();
+            });
+            el.appendChild(doneBtn);
+        }
+        if (task.status === "done") {
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "DELETE";
+            deleteBtn.addEventListener("click", async () => {
+                await deleteTask(task.id);
+                await displayTasks();
+            });
+            el.appendChild(deleteBtn);
+        }
         if (task.status === "new")
-            newTasksList.appendChild(taskEl);
+            newTasksList.appendChild(el);
         else if (task.status === "in progress")
-            inProgressTasksList.appendChild(taskEl);
-        else if (task.status === "done")
-            doneTasksList.appendChild(taskEl);
+            inProgressTasksList.appendChild(el);
+        else
+            doneTasksList.appendChild(el);
     });
 };
-// ✅ Full Task Display + Dropdown Update
 const displayTasks = async () => {
     const tasks = await getTasks();
-    displayFilteredTasks(tasks);
+    const members = await getMembers();
+    const filtered = filterAndSortTasks(tasks, members);
+    renderTasks(filtered, members);
+    await populateMemberDropdown();
 };
-// ✅ Search logic
-searchBtn.addEventListener("click", async () => {
-    const tasks = await getTasks();
-    const selectedMemberId = assignedMemberDropdown.value;
-    const selectedCategory = categoryDropdown.value;
-    const selectedTimestamp = timestampDropdown.value;
-    const selectedTitle = titleDropdown.value;
-    let filtered = tasks;
-    if (selectedMemberId) {
-        filtered = filtered.filter((task) => task.assigned?.id === selectedMemberId);
-    }
-    if (selectedCategory) {
-        filtered = filtered.filter((task) => task.category === selectedCategory);
-    }
-    if (selectedTimestamp === "newest") {
-        filtered.sort((a, b) => b.timestamp - a.timestamp);
-    }
-    else if (selectedTimestamp === "oldest") {
-        filtered.sort((a, b) => a.timestamp - b.timestamp);
-    }
-    if (selectedTitle === "az") {
-        filtered.sort((a, b) => a.title.localeCompare(b.title));
-    }
-    else if (selectedTitle === "za") {
-        filtered.sort((a, b) => b.title.localeCompare(a.title));
-    }
-    displayFilteredTasks(filtered);
-});
-// ✅ Reset logic
-resetBtn.addEventListener("click", () => {
-    assignedMemberDropdown.value = "";
-    categoryDropdown.value = "";
-    timestampDropdown.value = "";
-    titleDropdown.value = "";
-    displayTasks();
-});
-// ✅ Add Task
+// Event Listeners
 addTaskBtn.addEventListener("click", async () => {
     const title = taskTitle.value.trim();
     const desc = taskDesc.value.trim();
     const category = taskCategory.value;
     if (title && desc) {
-        const newTask = new Task("", title, desc, category, "new", null);
-        await addTask(newTask);
+        await addTask(new Task("", title, desc, category, "new", null));
         taskTitle.value = "";
         taskDesc.value = "";
-        displayTasks();
-        populateAssignedMembersDropdown();
+        await displayTasks();
     }
 });
-// ✅ Add Member
 addMemberBtn.addEventListener("click", async () => {
     const name = memberName.value.trim();
     const roles = Array.from(memberRoles)
         .filter((cb) => cb.checked)
         .map((cb) => cb.value);
     if (name && roles.length > 0) {
-        const newMember = new Member("", name, roles);
-        await addMember(newMember);
+        await addMember(new Member("", name, roles));
         memberName.value = "";
-        displayTasks();
-        populateAssignedMembersDropdown();
+        await displayTasks();
     }
 });
-// ✅ Init on load
+applyFiltersBtn.addEventListener("click", () => displayTasks());
+resetFiltersBtn.addEventListener("click", () => {
+    filterCategory.value = "";
+    filterMember.value = "";
+    sortTimestamp.value = "newest";
+    sortTitle.value = "az";
+    displayTasks();
+});
+// Assigned Member Filter UI
+assignedMemberSearchBtn.addEventListener("click", async () => {
+    const selectedId = assignedMemberDropdown.value;
+    const category = assignedFilterCategory.value;
+    const time = assignedSortTimestamp.value;
+    const title = assignedSortTitle.value;
+    const tasks = await getTasks();
+    const members = await getMembers();
+    let filtered = tasks.filter((t) => selectedId ? t.assigned?.id === selectedId : true);
+    if (category)
+        filtered = filtered.filter((t) => t.category === category);
+    if (time === "newest")
+        filtered.sort((a, b) => b.timestamp - a.timestamp);
+    else if (time === "oldest")
+        filtered.sort((a, b) => a.timestamp - b.timestamp);
+    if (title === "az")
+        filtered.sort((a, b) => a.title.localeCompare(b.title));
+    else if (title === "za")
+        filtered.sort((a, b) => b.title.localeCompare(a.title));
+    renderTasks(filtered, members);
+});
+assignedMemberResetBtn.addEventListener("click", () => {
+    assignedMemberDropdown.value = "";
+    assignedFilterCategory.value = "";
+    assignedSortTimestamp.value = "";
+    assignedSortTitle.value = "";
+    displayTasks();
+});
+// Initial load
 (async () => {
     await displayTasks();
-    await populateAssignedMembersDropdown();
 })();
