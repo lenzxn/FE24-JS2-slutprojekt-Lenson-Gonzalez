@@ -2,22 +2,23 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lensons Scrum Board</title>
-    <link rel="stylesheet" href="/src/style.css">
+    <link rel="stylesheet" href="/src/style.css" />
     <script type="module" src="/dist/app.js"></script>
 </head>
 
 <body>
     <h1>Scrum Board</h1>
+
     <section id="add-team-member">
         <h2>Add Team Member</h2>
-        <input type="text" id="member-name" placeholder="Member Name" required>
+        <input type="text" id="member-name" placeholder="Member Name" required />
         <div class="role-selection">
-            <label><input type="checkbox" class="role-checkbox" value="UX"> UX</label>
-            <label><input type="checkbox" class="role-checkbox" value="Frontend"> Frontend</label>
-            <label><input type="checkbox" class="role-checkbox" value="Backend"> Backend</label>
+            <label><input type="checkbox" class="role-checkbox" value="UX" /> UX</label>
+            <label><input type="checkbox" class="role-checkbox" value="Frontend" /> Frontend</label>
+            <label><input type="checkbox" class="role-checkbox" value="Backend" /> Backend</label>
         </div>
         <button id="add-member-btn">Add Member</button>
     </section>
@@ -26,7 +27,7 @@
 
     <section id="task-form">
         <h2>Add Task</h2>
-        <input type="text" id="task-title" placeholder="Task Title" required>
+        <input type="text" id="task-title" placeholder="Task Title" required />
         <textarea id="task-desc" placeholder="Task Description"></textarea>
         <select id="task-category">
             <option value="UX">UX</option>
@@ -36,48 +37,15 @@
         <button id="add-task-btn">Add Task</button>
     </section>
 
-    <section id="task-filters">
-        <h2>Filter & Sort Tasks</h2>
-
-        <label for="filter-member">Filter by Member:</label>
-        <select id="filter-member">
-            <option value="">All Members</option>
-        </select>
-
-        <label for="filter-category">Filter by Category:</label>
-        <select id="filter-category">
-            <option value="">All Categories</option>
-            <option value="UX">UX</option>
-            <option value="Frontend">Frontend</option>
-            <option value="Backend">Backend</option>
-        </select>
-
-        <label for="sort-timestamp">Sort by Timestamp:</label>
-        <select id="sort-timestamp">
-            <option value="newest">Newest to Oldest</option>
-            <option value="oldest">Oldest to Newest</option>
-        </select>
-
-        <label for="sort-title">Sort by Title:</label>
-        <select id="sort-title">
-            <option value="az">A-Z</option>
-            <option value="za">Z-A</option>
-        </select>
-
-        <button id="apply-filters">Apply Filters</button>
-        <button id="reset-filters">Reset Filters</button>
-    </section>
-
+    <!-- ✅ KEEP ONLY THIS FILTERING SECTION -->
     <section id="assigned-member-filter-ui">
         <h2>Search Tasks by Assigned Member</h2>
 
-        <!-- 🔹 Member Dropdown -->
         <label for="assigned-member-search">Assigned Member:</label>
         <select id="assigned-member-search">
             <option value="">-- Select Member --</option>
         </select>
 
-        <!-- 🔹 Category Filter -->
         <label for="assigned-filter-category">Category:</label>
         <select id="assigned-filter-category">
             <option value="">All Categories</option>
@@ -86,7 +54,6 @@
             <option value="Backend">Backend</option>
         </select>
 
-        <!-- 🔹 Timestamp Sort -->
         <label for="assigned-sort-timestamp">Sort by Timestamp:</label>
         <select id="assigned-sort-timestamp">
             <option value="">None</option>
@@ -94,7 +61,6 @@
             <option value="oldest">Oldest to Newest</option>
         </select>
 
-        <!-- 🔹 Title Sort -->
         <label for="assigned-sort-title">Sort by Title:</label>
         <select id="assigned-sort-title">
             <option value="">None</option>
@@ -102,13 +68,9 @@
             <option value="za">Z-A</option>
         </select>
 
-        <!-- 🔹 Buttons -->
         <button id="assigned-member-search-btn">Search</button>
         <button id="assigned-member-reset-btn">Reset</button>
     </section>
-
-
-
 
     <section id="scrum-board">
         <div class="column" id="new-tasks">
