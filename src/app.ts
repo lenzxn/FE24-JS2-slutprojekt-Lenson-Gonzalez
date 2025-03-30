@@ -53,42 +53,31 @@ const filterAndSortTasks = (tasks: Task[], members: Member[]): Task[] => {
 
   let result = [...tasks];
 
+  // ✅ Filter by category (if selected)
   if (filterCategory) {
     result = result.filter((task) => task.category === filterCategory);
   }
 
+  // ✅ Filter by member (if selected)
   if (filterMember) {
-    result = result.filter((task) => {
-      if (!task.assigned) return false;
-      return String(task.assigned.id).trim() === String(filterMember).trim();
-    });
+    result = result.filter(
+      (task) => task.assigned && task.assigned.id === filterMember
+    );
   }
 
-  // Combined sorting
-  result.sort((a, b) => {
-    if (sortTimestamp === "newest" && b.timestamp !== a.timestamp) {
-      return b.timestamp - a.timestamp;
-    } else if (sortTimestamp === "oldest" && a.timestamp !== b.timestamp) {
-      return a.timestamp - b.timestamp;
-    }
+  // ✅ Sort by timestamp
+  if (sortTimestamp === "newest") {
+    result.sort((a, b) => b.timestamp - a.timestamp);
+  } else if (sortTimestamp === "oldest") {
+    result.sort((a, b) => a.timestamp - b.timestamp);
+  }
 
-    if (sortTitle === "az") {
-      return a.title.localeCompare(b.title);
-    } else if (sortTitle === "za") {
-      return b.title.localeCompare(a.title);
-    }
-
-    console.log("🧪 Filtered Tasks:");
-    console.log(
-      result.map((t) => ({
-        title: t.title,
-        assigned: t.assigned?.name || "None",
-        timestamp: t.timestamp,
-      }))
-    );
-
-    return 0;
-  });
+  // ✅ Sort by title
+  if (sortTitle === "az") {
+    result.sort((a, b) => a.title.localeCompare(b.title));
+  } else if (sortTitle === "za") {
+    result.sort((a, b) => b.title.localeCompare(a.title));
+  }
 
   return result;
 };
@@ -146,6 +135,8 @@ const displayTasks = async () => {
 
   if (filteredTasks.length === 0) {
     newTasksList.innerHTML = "<p>No matching tasks found.</p>";
+    inProgressTasksList.innerHTML = "";
+    doneTasksList.innerHTML = "";
     return;
   }
 
@@ -327,6 +318,20 @@ if (applyFiltersBtn) {
       applyFiltersBtn.style.cursor = "pointer";
     }, 500);
 
+    displayTasks();
+  });
+}
+
+const resetBtn = document.getElementById("reset-filters") as HTMLButtonElement;
+
+if (resetBtn) {
+  resetBtn.addEventListener("click", () => {
+    (document.getElementById("filter-category") as HTMLSelectElement).value =
+      "";
+    (document.getElementById("filter-member") as HTMLSelectElement).value = "";
+    (document.getElementById("sort-timestamp") as HTMLSelectElement).value =
+      "newest";
+    (document.getElementById("sort-title") as HTMLSelectElement).value = "az";
     displayTasks();
   });
 }
