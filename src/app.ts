@@ -296,36 +296,69 @@ const populateAssignedMembersDropdown = async () => {
 
 assignedMemberSearchBtn.addEventListener("click", async () => {
   const selectedId = assignedMemberDropdown.value;
-  const tasks = await getTasks();
-  const filtered = tasks.filter((t) => t.assigned?.id === selectedId);
+  const selectedCategory = (
+    document.getElementById("assigned-filter-category") as HTMLSelectElement
+  ).value;
+  const selectedTimestamp = (
+    document.getElementById("assigned-sort-timestamp") as HTMLSelectElement
+  ).value;
+  const selectedTitle = (
+    document.getElementById("assigned-sort-title") as HTMLSelectElement
+  ).value;
 
+  const tasks = await getTasks();
+
+  let filtered = tasks.filter((task) => {
+    const matchMember = selectedId ? task.assigned?.id === selectedId : true;
+    const matchCategory = selectedCategory
+      ? task.category === selectedCategory
+      : true;
+    return matchMember && matchCategory;
+  });
+
+  // Sort logic
+  if (selectedTimestamp === "newest") {
+    filtered.sort((a, b) => b.timestamp - a.timestamp);
+  } else if (selectedTimestamp === "oldest") {
+    filtered.sort((a, b) => a.timestamp - b.timestamp);
+  }
+
+  if (selectedTitle === "az") {
+    filtered.sort((a, b) => a.title.localeCompare(b.title));
+  } else if (selectedTitle === "za") {
+    filtered.sort((a, b) => b.title.localeCompare(a.title));
+  }
+
+  // Clear previous
   newTasksList.innerHTML = "";
   inProgressTasksList.innerHTML = "";
   doneTasksList.innerHTML = "";
 
   if (filtered.length === 0) {
-    newTasksList.innerHTML = "<p>No tasks found for this member.</p>";
+    newTasksList.innerHTML = "<p>No matching tasks found.</p>";
     return;
   }
 
   filtered.forEach((task) => {
-    const taskEl = document.createElement("div");
-    taskEl.classList.add("task");
+    const taskElement = document.createElement("div");
+    taskElement.classList.add("task");
+
     const assignedText = task.assigned
       ? `${task.assigned.name} (${task.assigned.id})`
       : "Not assigned";
 
-    taskEl.innerHTML = `
+    taskElement.innerHTML = `
       <h3>${task.title}</h3>
       <p>${task.description}</p>
-      <small>${task.category}</small><br>
-      <p>Assigned to: ${assignedText}</p>
+      <small>Category: ${task.category}</small><br>
+      <small>Created: ${task.getFormattedDate()}</small>
+      <p class="assigned-info">Assigned to: ${assignedText}</p>
     `;
 
-    if (task.status === "new") newTasksList.appendChild(taskEl);
+    if (task.status === "new") newTasksList.appendChild(taskElement);
     else if (task.status === "in progress")
-      inProgressTasksList.appendChild(taskEl);
-    else if (task.status === "done") doneTasksList.appendChild(taskEl);
+      inProgressTasksList.appendChild(taskElement);
+    else if (task.status === "done") doneTasksList.appendChild(taskElement);
   });
 });
 
