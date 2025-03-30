@@ -258,4 +258,106 @@ if (resetBtn) {
         displayTasks();
     });
 }
-displayTasks();
+const assignedMemberDropdown = document.getElementById("assigned-member-dropdown");
+const assignedMemberSearchBtn = document.getElementById("assigned-member-search-btn");
+const assignedMemberResetBtn = document.getElementById("assigned-member-reset-btn");
+// const populateAssignedMembersDropdown = async () => {
+//   const tasks = await getTasks();
+//   const assignedMemberIds = new Set(
+//     tasks.filter((t) => t.assigned).map((t) => t.assigned!.id)
+//   );
+//   const members = await getMembers();
+//   assignedMemberDropdown.innerHTML = "<option value=''>Select Member</option>";
+//   members.forEach((member) => {
+//     if (assignedMemberIds.has(member.id)) {
+//       const option = document.createElement("option");
+//       option.value = member.id;
+//       option.innerText = member.name;
+//       assignedMemberDropdown.appendChild(option);
+//     }
+//   });
+// };
+const populateAssignedMembersDropdown = async () => {
+    const tasks = await getTasks();
+    const members = await getMembers();
+    const assignedDropdown = document.getElementById("assigned-member-search");
+    if (!assignedDropdown)
+        return;
+    assignedDropdown.innerHTML = "<option value=''>-- Select Member --</option>";
+    const assignedIds = new Set(tasks
+        .filter((task) => task.assigned && typeof task.assigned === "object")
+        .map((task) => task.assigned.id));
+    members.forEach((member) => {
+        if (assignedIds.has(member.id)) {
+            const option = document.createElement("option");
+            option.value = member.id;
+            option.textContent = member.name;
+            assignedDropdown.appendChild(option);
+        }
+    });
+};
+assignedMemberSearchBtn.addEventListener("click", async () => {
+    const selectedId = assignedMemberDropdown.value;
+    const tasks = await getTasks();
+    const filtered = tasks.filter((t) => t.assigned?.id === selectedId);
+    newTasksList.innerHTML = "";
+    inProgressTasksList.innerHTML = "";
+    doneTasksList.innerHTML = "";
+    if (filtered.length === 0) {
+        newTasksList.innerHTML = "<p>No tasks found for this member.</p>";
+        return;
+    }
+    filtered.forEach((task) => {
+        const taskElement = document.createElement("div");
+        taskElement.classList.add("task");
+        const assignedText = task.assigned
+            ? `${task.assigned.name} (${task.assigned.id})`
+            : "Not assigned";
+        taskElement.innerHTML = `
+      <h3>${task.title}</h3>
+      <p>${task.description}</p>
+      <small>Category: ${task.category}</small><br>
+      <small>Created: ${task.getFormattedDate()}</small>
+      <p class="assigned-info">Assigned to: ${assignedText}</p>
+    `;
+        if (task.status === "new")
+            newTasksList.appendChild(taskElement);
+        else if (task.status === "in progress")
+            inProgressTasksList.appendChild(taskElement);
+        else if (task.status === "done")
+            doneTasksList.appendChild(taskElement);
+    });
+});
+assignedMemberResetBtn.addEventListener("click", () => {
+    assignedMemberDropdown.value = "";
+    displayTasks();
+});
+const assignedMemberTasksDiv = document.getElementById("assigned-member-tasks");
+document
+    .getElementById("assigned-member-search")
+    ?.addEventListener("change", async (e) => {
+    const selectedId = e.target.value;
+    const tasks = await getTasks();
+    assignedMemberTasksDiv.innerHTML = "";
+    const matchedTasks = tasks.filter((task) => task.assigned && task.assigned.id === selectedId);
+    if (matchedTasks.length === 0) {
+        assignedMemberTasksDiv.innerHTML =
+            "<p>No tasks assigned to this member.</p>";
+        return;
+    }
+    matchedTasks.forEach((task) => {
+        const taskEl = document.createElement("div");
+        taskEl.classList.add("task");
+        taskEl.innerHTML = `
+      <h3>${task.title}</h3>
+      <p>${task.description}</p>
+      <small>${task.category}</small>
+      <p>Assigned to: ${task.assigned?.name}</p>
+    `;
+        assignedMemberTasksDiv.appendChild(taskEl);
+    });
+});
+(async () => {
+    await displayTasks();
+    await populateAssignedMembersDropdown();
+})();
