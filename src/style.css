@@ -63,7 +63,7 @@ h1 {
 
 /* 🔹 Filter Section */
 #task-filters {
-  display: flex;
+  display: none;
   justify-content: center;
   gap: 10px;
   margin-top: 20px;
