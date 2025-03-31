@@ -11,6 +11,9 @@ h1 {
   margin-bottom: 20px;
 }
 
+.hidden {
+  display: hidden;
+}
 /* 🔹 Add Member & Task Sections */
 #add-team-member,
 #task-form {
