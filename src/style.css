@@ -12,7 +12,7 @@ h1 {
 }
 
 .hidden {
-  display: hidden;
+  display: none;
 }
 /* 🔹 Add Member & Task Sections */
 #add-team-member,
